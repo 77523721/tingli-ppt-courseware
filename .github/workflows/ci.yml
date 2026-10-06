@@ -1,0 +1,40 @@
+# 每次 push / PR 都在 GitHub 的云端机器上重跑一遍自检。
+# 素材是运行时现造的合成件, 所以仓库里不需要放任何真实试卷或音频。
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:            # 也能在网页上手动点一下就跑
+
+permissions:
+  contents: read                # 只读仓库, 最小权限
+
+jobs:
+  selftest:
+    name: 自检 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false          # 一个平台挂了, 另一个也跑完, 方便一起看
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      PYTHONIOENCODING: utf-8   # Windows runner 上中文输出不加这句会炸
+    steps:
+      # 版本号也可以换成 book-to-skill 里那种钉 SHA 的写法(更安全), 这里用 tag 便于阅读
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'          # 与本地一致
+
+      - name: 装依赖(只需要 python-docx)
+        run: python -m pip install --upgrade pip python-docx
+
+      - name: 语法编译
+        run: python -m py_compile make_ppt_courseware.py tests/fixtures.py tests/test_courseware.py tests/smoke_cli.py
+
+      - name: 单元自检
+        run: python tests/test_courseware.py
+
+      - name: 命令行冒烟
+        run: python tests/smoke_cli.py
