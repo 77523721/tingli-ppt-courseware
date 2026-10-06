@@ -17,6 +17,13 @@ import zipfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fixtures as F                                          # noqa: E402
 
+# 和主程序一样: 自己把输出设成 UTF-8
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 
 def run(cwd, *args):
     return subprocess.run([sys.executable, "make_ppt_courseware.py"] + list(args),

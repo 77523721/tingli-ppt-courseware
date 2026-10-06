@@ -1,20 +1,26 @@
 # 听力 PPT 课件 使用说明
 
-> 本文件、`make_ppt_courseware.py`、`一键生成听力PPT课件.bat`、`听力课件模板.pptx` 要在同一个文件夹里。
+> 本文件、`make_ppt_courseware.py`、`听力课件模板.pptx` 要在同一个文件夹里。
 > 把这一整套拷进某一卷的文件夹，就在那一卷里用。
 
 ---
 
 ## 一、怎么用（一句话）
 
-把某一卷的 **听力 mp3 + 试卷 docx + 听力原文 docx** 放进一个文件夹，
-**双击 `一键生成听力PPT课件.bat`**，同文件夹里就出 `<卷名>听力课件.pptx`。
+把某一卷的 **听力 mp3 + 试卷 docx + 听力原文 docx** 放进一个文件夹，在**这个文件夹**里执行：
 
-- 双击 bat 时，它处理的是**bat 所在的这个文件夹**（也就是本文件夹）。
+```
+python make_ppt_courseware.py
+```
+
+同文件夹里就出 `<卷名>听力课件.pptx`。
+
+- 不传参数时，它处理的是**脚本所在的这个文件夹**（也就是本文件夹）。
 - 想处理别的文件夹：`python make_ppt_courseware.py "D:\某卷"`，或把这一套拷过去。
 - 全流程**不打开 PowerPoint、不用宏**，热路径不到 1 秒、冷路径（要现场切分）约 10 秒，可反复重跑。
 - 跑完会自动留一份 `听力课件模板-备份.pptx`，**别删**（见第五节）。
 - 忘了参数就敲：`python make_ppt_courseware.py --help`，会把全部用法打出来。
+- 控制台中文乱码的问题脚本自己解决了（启动时把输出设成 UTF-8），**不需要任何 `.bat` 包装**。
 
 ### 文件夹里需要什么
 
@@ -111,7 +117,7 @@
 
 日常只做两件事：
 
-- 双击 `一键生成听力PPT课件.bat`
+- 在卷文件夹里跑一句 `python make_ppt_courseware.py`
 - 想换一卷 → 拷贝一个新的卷文件夹，或在命令行里把文件夹当参数传进去
 
 模板坏了程序自己会修（下一节），不用手工补。
@@ -158,7 +164,7 @@ python make_ppt_courseware.py --rebuild-template
 | `[!!] 但它比 xxx.mp3 旧` | 换过听力 mp3，但 `audio\` 还是旧的 | 加 `--recut` 重切 |
 | 音频还是旧的 | 用了旧的 `音频文件\`（比 mp3 旧） | 加 `--recut` 重切 |
 | 自动切分段数不对 / 报"按提示音自动定位失败" | 提示音没认全，或音频与文本段数不符 | 按报错提示手工建 `<卷名>听力课件_seg.json` 后重跑 |
-| 控制台中文乱码 | 控制台编码 | 用 `一键生成听力PPT课件.bat` 跑（内部已设 UTF-8） |
+| 控制台中文乱码 | Python 版本太老（< 3.7，没有 `reconfigure`） | 升级 Python；3.7+ 脚本启动时会自己把输出设成 UTF-8 |
 
 ---
 
@@ -166,7 +172,6 @@ python make_ppt_courseware.py --rebuild-template
 
 | 文件 | 角色 |
 |---|---|
-| `一键生成听力PPT课件.bat` | 双击入口 |
 | `make_ppt_courseware.py` | 主程序（纯 Python，无需 PowerPoint） |
 | `听力PPT课件使用说明.md` | 本文件 |
 | `听力课件模板.pptx` | 模板，**别用 PowerPoint 编辑** |
@@ -175,6 +180,7 @@ python make_ppt_courseware.py --rebuild-template
 | `audio\seg01-10.mp3` | 切好的分段音频，留着下次秒出；删了会重切 |
 | `<卷名>听力课件_seg.json` | 切分点缓存（可手工微调），走自带切分时生成 |
 | `音频文件\`、`tm.txt`、`yw.txt` | 只有加 `--legacy` 才生成；老宏路素材，平时用不到 |
+| `tests\`、`.github\`、`README.md` | 仓库自带的自检套件与 CI 配置，不影响日常使用 |
 
 > 老宏那条路（`.pptm`）已连同素材另存到 `听力PPT课件生成器(通过宏生成_暂时保留)\`，本套工具不需要它。
 
@@ -207,3 +213,12 @@ python make_ppt_courseware.py --rebuild-template
 - `--help`；`--rebuild-template` 可以省掉文件参数（自动找成品）；
 - `audio\` 比 mp3 旧会提醒（不擅自重切，保持"先用现成的"）；
 - 试卷 docx 的挑选多认「试题」二字（如 `…全国Ⅰ卷 听力试题.docx`）。
+
+**再一轮（去掉 bat + 上 GitHub）**
+
+- **`.bat` 已删除，以后不用了**。它原先只干三件事：切 UTF-8 代码页、`cd` 到自己所在目录、`pause`。
+  其中唯一有实质作用的是中文编码 —— 现在脚本启动时自己把输出设成 UTF-8（管道、重定向同样有效），
+  所以 bat 确实是多余的；
+- 新增 `tests\` 自检套件：单元 18 项 + 命令行冒烟，素材全部**运行时现造**，
+  仓库里不放任何试卷或音频；本地跑只要 `python-docx`，不需要 pytest / numpy / ffmpeg；
+- 新增 `.github/workflows/ci.yml`：每次 push 在 ubuntu 与 windows 上各跑一遍自检。

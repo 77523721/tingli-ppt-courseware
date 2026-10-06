@@ -10,9 +10,17 @@
 |---|---|
 | `听力PPT课件使用说明.md` | **完整说明书，先看这个** |
 | `make_ppt_courseware.py` | 主程序（纯 Python） |
-| `一键生成听力PPT课件.bat` | 双击入口 |
 | `tests/` | 自检套件（合成素材，仓库里不含任何真实试卷或音频） |
 | `.github/workflows/ci.yml` | 每次 push 自动跑上面这套自检 |
+
+## 怎么跑
+
+```
+python make_ppt_courseware.py
+```
+
+不带参数就处理脚本所在的文件夹。中文输出由脚本自己设成 UTF-8，
+**不需要 `.bat` 包装**（管道/重定向也不会乱码）。
 
 ## 本地自检
 

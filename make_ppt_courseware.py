@@ -3,13 +3,14 @@
 听力PPT课件生成器  —— 由切分音频(网页课件切的, 或本程序自切)直接拼出可播放的 pptx。
 
 用法:
-    双击  一键生成听力PPT课件.bat          (最省事)
     python make_ppt_courseware.py [试卷文件夹] [--recut] [--legacy]
     python make_ppt_courseware.py --rebuild-template [成品.pptx]
     python make_ppt_courseware.py --help
         --recut   强制重切音频(换过 mp3 时用)
         --legacy  额外产出 tm.txt/yw.txt/音频文件 (喂老的 .pptm 宏路)
         --rebuild-template  用一份能播的成品 pptx 重建模板
+
+不传文件夹就对"本脚本所在的文件夹"下手; 中文输出由脚本自己设好 UTF-8, 无需任何包装。
 
 文件夹里需要:
     - 听力 mp3        (如  XXX_英语听力.mp3)
@@ -39,6 +40,15 @@
 import os, re, sys, io, json, shutil, zipfile, posixpath, subprocess
 import xml.etree.ElementTree as ET
 import docx
+
+# 控制台中文: 自己把标准输出/错误设成 UTF-8。
+# 这样直接 `python make_ppt_courseware.py` 就不会乱码, 不需要任何 .bat 包装;
+# 输出被管道接走、或重定向到文件时同样有效。
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:                  # 没有控制台(如 pythonw)或已被别的对象接管
+        pass
 
 try:
     import numpy as np
